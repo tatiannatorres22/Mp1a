@@ -6,74 +6,110 @@
  * Time: 00:12
  */
 
-main::start();
+main::start("example.csv");
 
 class main {
-    static public function start() {
-        $records=csv::getRecords();
-        $table=html::generateTable($records);
-        system::printPage($table);
-}
+    static public function start($filename) {
 
-}
+        $records = csv::getRecords($filename);
+        $table = html::generateTable($records);
 
-class csv {
-
-    static public function getRecords() {
-
-      $make= 'Lambo';
-      $model= 'Bling Wagon';
-      $car=AutomobileFactory::create($make, $model);
-
-        $records[]= $car
-            print_r($records);
-
-        return $records;
     }
-
 }
 
 class html {
 
-    static public function generateTable($records) {
+    public static function generateTable($records){
 
-        $table= $records;
+        $count = 0;
 
-        return $table;
+        foreach ($records as $record) {
+
+            if($count == 0){
+                $array= $record->returnArray();
+                 $fields= array_keys($array);
+                 $values= array_values($array);
+                 print_r($fields);
+                 print_r($values);
+
+            } else {
+                $array= $record->returnArray();
+                $values= array_values($array);
+                print_r($values);
+            }
+            $count++;
+        }
+
+    }
+}
+class csv {
+
+    static public function getRecords($filename) {
+
+        $file = fopen($filename,"r");
+
+        $fieldName= array();
+
+        $count= 0;
+
+        while(! feof($file))
+        {
+            $record= fgetcsv($file);
+            if ($count == 0 ){
+                $fieldNames= $record;
+            } else {
+                $records[]= recordFactory::create($fieldNames, $record);
+            }
+           $count++;
+        }
+
+        fclose($file);
+        return $records;
+
 
     }
 
-}
-
-class system {
-    static public function printPage($Page) {
-        echo $Page;
-    }
-
 
 }
 
-class Automobile
-{
-    private $vehicleMake;
-    private $vehicleModel;
+class record {
 
-    public function __construct($make, $model)
+    public function __construct(Array $fieldNames= null, $values =null)
     {
-        $this->vehicleMake = $make;
-        $this->vehicleModel = $model;
+        $record = array_combine($fieldNames, $values);
+
+        foreach ($record as $property => $value){
+            $this->createProperty($property, $value);
+        }
+
+
     }
 
-    public function getMakeAndModel()
-    {
-        return $this->vehicleMake . ' ' . $this->vehicleModel;
+
+    public function returnArray() {
+    $array= (array) $this;
+
+    return $array;
+
+    }
+
+    public function createProperty($name= 'first', $value= 'Tatianna') {
+
+        $this->{$name} = $value;
+    }
+    }
+
+
+class recordFactory{
+
+    public static function create(Array $fieldNames = null, Array $values = null) {
+
+
+        $record = new record($fieldNames, $values);
+
+
+        return $record;
+
     }
 }
 
-class AutomobileFactory
-{
-    public static function create($make, $model)
-    {
-        return new Automobile($make, $model);
-    }
-}
